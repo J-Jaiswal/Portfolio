@@ -7,19 +7,24 @@
  *   - 12-column grid.
  *   - Left (4 columns): 1px-bordered photo frame with corner notch and monogram fallback, anchored on desktop.
  *   - Right (8 columns): Bio paragraph, 3 stat boxes with mono labels, availability tag,
- *     "HOW I WORK" principle cards (hidden while TODO), and "WHAT PEOPLE SAY" (hidden while empty).
- *   - Reads all content from src/data/about.js.
+ *     "FIND ME ONLINE" social link cards, "HOW I WORK" principle cards, and "WHAT PEOPLE SAY".
+ *   - Reads all content from src/data/about.js and src/data/links.js.
  *
  * NOTE: Zero occurrences of the forbidden word across this file.
  */
 
 import { useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import PageLayout from '../layout/PageLayout';
 import { aboutData, POSITIONING, AVAILABILITY, howIWork, recommendations } from '../data/about';
+import links from '../data/links';
 import { isPlaceholder } from '../utils/placeholders';
+import Icon from '../components/Icon';
+import { stagger, item, itemReduced } from '../lib/motion';
 
 export default function AboutPage() {
   const [imgError, setImgError] = useState(false);
+  const shouldReduce = useReducedMotion();
 
   // Filter out any TODO items in How I Work
   const activeHowIWork = (howIWork || []).filter(
@@ -34,6 +39,33 @@ export default function AboutPage() {
       !isPlaceholder(rec.quote, 'about.js', `recommendations[${idx}].quote`) &&
       !isPlaceholder(rec.name, 'about.js', `recommendations[${idx}].name`)
   );
+
+  const resolvedItem = shouldReduce ? itemReduced : item;
+
+  /* Social links config */
+  const socialLinks = [
+    {
+      name: 'GitHub',
+      icon: 'github',
+      href: links.github,
+      handle: links.githubHandle,
+      label: 'GitHub, opens in a new tab',
+    },
+    {
+      name: 'LinkedIn',
+      icon: 'linkedin',
+      href: links.linkedin,
+      handle: links.linkedinHandle,
+      label: 'LinkedIn, opens in a new tab',
+    },
+    {
+      name: 'itch.io',
+      icon: 'itchio',
+      href: links.itchio,
+      handle: links.itchioHandle,
+      label: 'itch.io, opens in a new tab',
+    },
+  ];
 
   return (
     <PageLayout
@@ -81,7 +113,7 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* ── Right Column (8 Cols): Bio, Stats, Availability Tag, Sections ── */}
+        {/* ── Right Column (8 Cols): Bio, Stats, Availability, Social, How I Work ── */}
         <div className="md:col-span-8 flex flex-col gap-6">
 
           {/* Bio Box */}
@@ -95,10 +127,17 @@ export default function AboutPage() {
           </section>
 
           {/* Three Stat Boxes */}
-          <section aria-label="Key metrics" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <motion.section
+            aria-label="Key metrics"
+            className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+            variants={stagger}
+            initial="hidden"
+            animate="visible"
+          >
             {aboutData.stats.map((stat) => (
-              <div
+              <motion.div
                 key={stat.label}
+                variants={resolvedItem}
                 className="card p-4 sm:p-5 border border-border flex flex-col justify-between hover:border-accent transition-colors"
               >
                 <span className="font-mono text-[0.7rem] uppercase tracking-wider text-text-muted mb-2">
@@ -107,9 +146,9 @@ export default function AboutPage() {
                 <span className="font-heading text-xl sm:text-2xl font-bold uppercase tracking-wider text-text">
                   {stat.value}
                 </span>
-              </div>
+              </motion.div>
             ))}
-          </section>
+          </motion.section>
 
           {/* Availability Status Tag */}
           <div className="card p-4 border border-border flex flex-col gap-2 bg-surface-raised">
@@ -131,7 +170,49 @@ export default function AboutPage() {
             )}
           </div>
 
-          {/* ── How I Work (hidden while items are TODO) ───────────────────── */}
+          {/* ── FIND ME ONLINE ────────────────────────────────────────────── */}
+          <section aria-labelledby="social-heading" className="flex flex-col gap-3">
+            <h2 id="social-heading" className="label-mono text-xs">
+              FIND ME ONLINE
+            </h2>
+            <motion.div
+              className="grid grid-cols-1 sm:grid-cols-3 gap-3"
+              variants={stagger}
+              initial="hidden"
+              animate="visible"
+            >
+              {socialLinks.map((s) => (
+                <motion.a
+                  key={s.name}
+                  variants={resolvedItem}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                  className="group card p-4 border border-border hover:border-accent transition-colors flex flex-col gap-2 min-h-[44px] justify-between"
+                >
+                  <div className="flex items-center justify-between">
+                    <Icon name={s.icon} size={18} className="text-accent" />
+                    <Icon
+                      name="arrow-up-right"
+                      size={14}
+                      className="text-text-muted group-hover:text-accent group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="font-mono text-xs uppercase tracking-widest text-text-muted">
+                      {s.name}
+                    </span>
+                    <span className="font-mono text-[0.7rem] text-text-muted truncate">
+                      {s.handle}
+                    </span>
+                  </div>
+                </motion.a>
+              ))}
+            </motion.div>
+          </section>
+
+          {/* ── How I Work (hidden while items are TODO) ──────────────────── */}
           {activeHowIWork.length > 0 && (
             <section aria-labelledby="how-i-work-heading" className="flex flex-col gap-3">
               <h2 id="how-i-work-heading" className="label-mono text-xs">
@@ -158,7 +239,7 @@ export default function AboutPage() {
             </section>
           )}
 
-          {/* ── What People Say / Recommendations (hidden while empty) ────── */}
+          {/* ── What People Say / Recommendations (hidden while empty) ──── */}
           {activeRecommendations.length > 0 && (
             <section aria-labelledby="recommendations-heading" className="flex flex-col gap-3">
               <h2 id="recommendations-heading" className="label-mono text-xs">

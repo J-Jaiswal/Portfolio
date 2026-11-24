@@ -21,9 +21,10 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { motion, useReducedMotion } from 'framer-motion';
+import {} from 'framer-motion'; // kept for future use
 import { useAppState } from '../state/useAppState';
 import { useSound } from '../hooks/useSound';
+import Icon from '../components/Icon';
 
 /* ── Tab Order Definition ─────────────────────────────────────────────────── */
 const TABS = [
@@ -35,12 +36,9 @@ const TABS = [
   { path: '/resume',  num: '06', label: 'RESUME',  title: 'Resume' },
 ];
 
-/* ── Motion Variants ─────────────────────────────────────────────────────── */
-const pageVariants = {
-  initial: { opacity: 0, x: 12 },
-  animate: { opacity: 1, x: 0,  transition: { duration: 0.2, ease: 'easeOut' } },
-  exit:    { opacity: 0, x: -12, transition: { duration: 0.15, ease: 'easeIn' } },
-};
+/* ── Motion Variants ─────────────────────────────────────────────────────
+   PageTransition in App.jsx handles the outer page transition.
+   PageLayout's main element is a plain element without its own transition. */
 
 export default function PageLayout({
   label,
@@ -50,7 +48,6 @@ export default function PageLayout({
 }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const shouldReduceMotion = useReducedMotion();
   const headingRef = useRef(null);
   const { soundOn, toggleSound, setSelectedMenuIndex } = useAppState();
   const { play } = useSound();
@@ -151,13 +148,8 @@ export default function PageLayout({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  const resolvedVariants = shouldReduceMotion
-    ? {
-        initial: { opacity: 1, x: 0 },
-        animate: { opacity: 1, x: 0, transition: { duration: 0 } },
-        exit:    { opacity: 1, x: 0, transition: { duration: 0 } },
-      }
-    : pageVariants;
+  /* PageTransition in App.jsx handles all route animations.
+     No local animation state needed in PageLayout. */
 
   return (
     <div className="min-h-screen bg-bg text-text flex flex-col selection:bg-accent selection:text-bg">
@@ -221,15 +213,11 @@ export default function PageLayout({
       </header>
 
       {/* ── Main Page Content ───────────────────────────────────────────── */}
-      <motion.main
+      <main
         id="main-content"
         tabIndex={-1}
         className="flex-1 content-container py-8 sm:py-12 outline-none"
-        variants={resolvedVariants}
-        initial="initial"
-        animate="animate"
-        exit="exit"
-      >
+            >
         {/* ── Page Header ──────────────────────────────────────────────── */}
         <header className="mb-8 sm:mb-12 border-b border-border pb-6 sm:pb-8">
           {label && (
@@ -258,7 +246,7 @@ export default function PageLayout({
         <div className="w-full">
           {children}
         </div>
-      </motion.main>
+      </main>
 
       {/* ── Footer Row ──────────────────────────────────────────────────── */}
       <footer className="border-t border-border bg-surface w-full mt-auto">
@@ -307,10 +295,11 @@ export default function PageLayout({
               type="button"
               onClick={toggleSound}
               className="btn-secondary min-h-[44px] min-w-[44px] p-2 flex items-center justify-center font-mono text-xs gap-1.5"
-              aria-label={soundOn ? 'Mute audio' : 'Enable audio'}
+              aria-label={soundOn ? 'Mute UI sounds' : 'Unmute UI sounds'}
+              aria-pressed={soundOn}
               title={soundOn ? 'Audio: Active' : 'Audio: Muted'}
             >
-              <span aria-hidden="true">{soundOn ? '🔊' : '🔇'}</span>
+              <Icon name={soundOn ? 'volume' : 'volume-off'} size={16} />
               <span className="hidden sm:inline uppercase text-[0.7rem] tracking-wider">
                 {soundOn ? 'AUDIO ON' : 'MUTED'}
               </span>

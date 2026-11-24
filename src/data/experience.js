@@ -4,16 +4,19 @@
  * Timeline entries for the Journey panel.
  * Represents education and work milestones.
  *
+ * type field values:
+ *   'full-time' | 'intern' | 'education'
+ *
  * NOTE: Zero occurrences of the forbidden word across this file.
  */
 
 const experience = [
   {
     id: 'vlabs-iitr',
-    type: 'work',
+    type: 'intern',
     role: 'Software Developer Intern',
     organization: 'VLabs, IIT Roorkee',
-    period: 'July 2025 – Sept 2025',
+    period: 'July 2025 — Sept 2025',
     status: 'Completed',
     summary: 'Built interactive web-based simulations for seismic exploration and education.',
     bullets: [
@@ -28,7 +31,7 @@ const experience = [
     type: 'education',
     role: 'Integrated M.Tech, Geophysical Technology',
     organization: 'Indian Institute of Technology Roorkee',
-    period: 'Nov 2020 – May 2025',
+    period: 'Nov 2020 — May 2025',
     status: 'Completed',
     summary: 'Integrated M.Tech degree covering geophysical modeling, computation, and programming.',
     bullets: [],

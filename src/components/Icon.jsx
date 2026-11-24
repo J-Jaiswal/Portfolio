@@ -5,12 +5,13 @@
  * Zero external libraries, zero icon fonts, zero emoji.
  *
  * Supported icons:
- *   - windows, android, apple, web
+ *   - windows, android, apple/ios, web
  *   - play, download, github
  *   - arrow-left, arrow-right, arrow-up-right
  *   - chevron-left, chevron-right
  *   - menu, alert, check, copy
- *   - mail, whatsapp, linkedin, itch
+ *   - mail/email, phone, whatsapp, linkedin, itch/itchio
+ *   - volume, volume-off  (UI sound toggle)
  *
  * NOTE: Zero occurrences of the forbidden word across this file.
  */
@@ -176,6 +177,29 @@ export default function Icon({ name, size = 16, className = '' }) {
       return (
         <svg {...commonProps}>
           <path d="M13.85 3.65a.5.5 0 0 1 0 .7L6.5 11.7a.5.5 0 0 1-.7 0L2.15 8.05a.5.5 0 1 1 .7-.7L6.15 10.65l6.99-7a.5.5 0 0 1 .71 0z" />
+        </svg>
+      );
+
+    /* ── Sound toggle icons ──────────────────────────────────────────────── */
+    case 'volume':
+      return (
+        <svg {...commonProps}>
+          {/* Speaker cone */}
+          <path d="M2 5.75h2.5l3.5-2.5v9.5l-3.5-2.5H2V5.75z" />
+          {/* Inner arc ~3px radius */}
+          <path d="M10 6.3a2.5 2.5 0 010 3.4L9 8.8a1 1 0 000-1.6L10 6.3z" />
+          {/* Outer arc ~5px radius */}
+          <path d="M11.5 4.7a5 5 0 010 6.6l-1-.9a3.5 3.5 0 000-4.8l1-.9z" />
+        </svg>
+      );
+
+    case 'volume-off':
+      return (
+        <svg {...commonProps}>
+          {/* Speaker cone */}
+          <path d="M2 5.75h2.5l3.5-2.5v9.5l-3.5-2.5H2V5.75z" />
+          {/* X mark */}
+          <path d="M10.6 6l-.8.8 1.4 1.4-1.4 1.4.8.8 1.4-1.4 1.4 1.4.8-.8-1.4-1.4 1.4-1.4-.8-.8-1.4 1.4-1.4-1.4z" />
         </svg>
       );
 

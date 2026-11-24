@@ -8,6 +8,10 @@
  *   - TitleScreen is shown once per browser session (tracked via sessionStorage).
  *   - EmbersBackdrop sits behind TitleScreen and MainMenu on "/" only.
  *   - Direct visits to other paths (e.g. /about) skip TitleScreen completely.
+ *
+ * Task 3 fix:
+ *   - Uses min-h-dvh instead of min-h-screen to avoid 100vh-related extra space on mobile.
+ *   - Content aligns to start on mobile, centered on desktop (handled inside MainMenu).
  */
 
 import { useState, useEffect } from 'react';
@@ -47,11 +51,11 @@ export default function HomePage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-bg text-text overflow-hidden">
-      {/* ── Embers Canvas Backdrop (Exclusive to "/") ─────────────────── */}
+    <div className="relative min-h-dvh bg-bg text-text overflow-hidden">
+      {/* ── Embers Canvas Backdrop (Exclusive to "/") ─────────────────────── */}
       <EmbersBackdrop isMobileStrip={hasSeenTitle} />
 
-      {/* ── Screen Orchestrator (TitleScreen vs MainMenu) ─────────────── */}
+      {/* ── Screen Orchestrator (TitleScreen vs MainMenu) ───────────────── */}
       <AnimatePresence mode="wait">
         {!hasSeenTitle ? (
           <motion.div
@@ -59,7 +63,7 @@ export default function HomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transition: { duration: 0.25 } }}
-            className="w-full min-h-screen flex items-center justify-center"
+            className="w-full min-h-dvh flex items-center justify-center"
           >
             <TitleScreen onComplete={handleTitleComplete} />
           </motion.div>
@@ -69,7 +73,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="w-full min-h-screen"
+            className="w-full min-h-dvh"
           >
             <MainMenu />
           </motion.div>

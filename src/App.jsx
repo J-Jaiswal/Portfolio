@@ -18,10 +18,12 @@
  */
 
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AppStateProvider } from './state/AppState';
+import PageTransition from './components/PageTransition';
+import SoundProvider from './components/SoundProvider';
 
-/* ── Lazy Loaded Pages ──────────────────────────────────────────────────── */
+/* ── Lazy Loaded Pages ───────────────────────────────────────────────────── */
 const HomePage       = lazy(() => import('./pages/HomePage'));
 const AboutPage      = lazy(() => import('./pages/AboutPage'));
 const ToolkitPage    = lazy(() => import('./pages/ToolkitPage'));
@@ -49,24 +51,38 @@ function PageFallback() {
   );
 }
 
+/* ── Inner router (needs to be inside BrowserRouter for hooks) ────────────── */
+function AppRoutes() {
+  const location = useLocation();
+
+  return (
+    <>
+      <SoundProvider />
+      <PageTransition>
+        <Suspense fallback={<PageFallback />}>
+          <Routes location={location}>
+            <Route path="/"               element={<HomePage />} />
+            <Route path="/about"          element={<AboutPage />} />
+            <Route path="/toolkit"        element={<ToolkitPage />} />
+            <Route path="/games"          element={<GamesPage />} />
+            <Route path="/games/space-go" element={<Navigate to="/games?game=pursuit" replace />} />
+            <Route path="/games/:id"      element={<GameDetailPage />} />
+            <Route path="/journey"        element={<JourneyPage />} />
+            <Route path="/contact"        element={<ContactPage />} />
+            <Route path="/resume"         element={<ResumePage />} />
+            <Route path="*"              element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+      </PageTransition>
+    </>
+  );
+}
+
 export default function App() {
   return (
     <AppStateProvider>
       <BrowserRouter>
-        <Suspense fallback={<PageFallback />}>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/toolkit" element={<ToolkitPage />} />
-            <Route path="/games" element={<GamesPage />} />
-            <Route path="/games/space-go" element={<Navigate to="/games?game=pursuit" replace />} />
-            <Route path="/games/:id" element={<GameDetailPage />} />
-            <Route path="/journey" element={<JourneyPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/resume" element={<ResumePage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
+        <AppRoutes />
       </BrowserRouter>
     </AppStateProvider>
   );

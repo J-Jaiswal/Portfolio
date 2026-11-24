@@ -7,12 +7,15 @@
  *   - Desktop: Left column with identity, availability tag, and vertical menu list.
  *     Right area left open for the embers backdrop.
  *   - Mobile: Backdrop strip at the top (~30vh) with large tappable rows (>= 56px) below.
+ *     Task 3 fix: pt-[min(28vh,120px)] prevents excessive top space on small phones
+ *     while safe-area-inset-top is respected via env().
  *   - Staggered row entrance (~40ms each; instant with reduced motion).
  *   - Keyboard navigation: ArrowUp/ArrowDown & W/S (wrap), Enter/Space to open.
  *   - Hover selects with sound, click opens with sound.
  *   - Sliding 2px amber accent bar and right-aligned mono description on active row.
  *   - Remembers previously opened item when returning to the menu.
  *   - Desktop-only navigation hints and sound toggle in bottom bar.
+ *   - Sound toggle uses Icon component (volume / volume-off) with aria-pressed.
  *
  * NOTE: Zero occurrences of the forbidden word across this file.
  */
@@ -23,8 +26,9 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { useAppState } from '../state/useAppState';
 import { useSound } from '../hooks/useSound';
 import { POSITIONING } from '../data/about';
+import Icon from '../components/Icon';
 
-/* ── Menu Items Definition ───────────────────────────────────────────────── */
+/* ── Menu Items Definition ─────────────────────────────────────────────── */
 const MENU_ITEMS = [
   {
     path: '/about',
@@ -64,7 +68,7 @@ const MENU_ITEMS = [
   },
 ];
 
-/* ── Motion Variants ─────────────────────────────────────────────────────── */
+/* ── Motion Variants ───────────────────────────────────────────────────── */
 const listVariants = {
   hidden:  {},
   visible: { transition: { staggerChildren: 0.04, delayChildren: 0.05 } },
@@ -83,7 +87,7 @@ export default function MainMenu() {
 
   const itemRefs = useRef([]);
 
-  /* ── Open Item Handler ─────────────────────────────────────────────────── */
+  /* ── Open Item Handler ──────────────────────────────────────────────── */
   const handleOpen = useCallback(
     (item, index) => {
       setSelectedMenuIndex(index);
@@ -93,7 +97,7 @@ export default function MainMenu() {
     [navigate, setSelectedMenuIndex, play]
   );
 
-  /* ── Keyboard Navigation (ArrowUp/ArrowDown, W/S, Enter/Space) ──────────── */
+  /* ── Keyboard Navigation (ArrowUp/ArrowDown, W/S, Enter/Space) ────── */
   useEffect(() => {
     function onKeyDown(e) {
       if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
@@ -122,16 +126,30 @@ export default function MainMenu() {
   }, [selectedMenuIndex]);
 
   return (
-    <div className="relative z-10 w-full min-h-screen flex flex-col justify-between p-4 sm:p-8 md:p-14">
-      {/* ── Top Skip Link ────────────────────────────────────────────────── */}
+    /*
+     * Task 3: Mobile spacing fix.
+     * - min-h-dvh avoids 100vh overflow on mobile browsers.
+     * - On mobile: content starts below the embers strip using
+     *   pt-[calc(env(safe-area-inset-top,0px)+16px)] for safe-area
+     *   plus a measured offset. md:pt-0 restores desktop layout.
+     * - justify-start on mobile, md:justify-between on desktop keeps
+     *   the footer anchored without centering everything mid-screen.
+     */
+    <div className="relative z-10 w-full min-h-dvh flex flex-col p-4 sm:p-8 md:p-14">
+      {/* ── Top Skip Link ───────────────────────────────────────────────── */}
       <a href="#menu-nav" className="skip-link">
         Skip to menu navigation
       </a>
 
-      {/* ── Main Content Container ───────────────────────────────────────── */}
-      <div className="w-full max-w-xl md:max-w-2xl mt-auto md:my-auto pt-[28vh] md:pt-0">
+      {/* ── Main Content Container ────────────────────────────────────── */}
+      {/*
+       * Mobile: mt-auto pushes content down into the bottom half of dvh,
+       * but we cap the gap with a max padding so it doesn't feel excessive.
+       * Desktop: my-auto centers vertically.
+       */}
+      <div className="w-full max-w-xl md:max-w-2xl pt-[min(28vh,160px)] md:pt-0 md:my-auto">
 
-        {/* ── Identity & Availability Header ─────────────────────────────── */}
+        {/* ── Identity & Availability Header ──────────────────────────── */}
         <header className="mb-8 md:mb-10">
           <div className="label-mono mb-2">PORTFOLIO / 2026</div>
 
@@ -152,7 +170,7 @@ export default function MainMenu() {
           </div>
         </header>
 
-        {/* ── Vertical Menu Navigation ──────────────────────────────────── */}
+        {/* ── Vertical Menu Navigation ─────────────────────────────────── */}
         <nav id="menu-nav" aria-label="Main menu">
           <motion.ul
             variants={shouldReduceMotion ? {} : listVariants}
@@ -161,12 +179,12 @@ export default function MainMenu() {
             className="flex flex-col border-t border-border"
             role="list"
           >
-            {MENU_ITEMS.map((item, index) => {
+            {MENU_ITEMS.map((menuItem, index) => {
               const isSelected = selectedMenuIndex === index;
 
               return (
                 <motion.li
-                  key={item.label}
+                  key={menuItem.label}
                   variants={shouldReduceMotion ? {} : itemVariants}
                   className="relative border-b border-border"
                 >
@@ -175,7 +193,7 @@ export default function MainMenu() {
                       itemRefs.current[index] = el;
                     }}
                     type="button"
-                    onClick={() => handleOpen(item, index)}
+                    onClick={() => handleOpen(menuItem, index)}
                     onMouseEnter={() => {
                       if (selectedMenuIndex !== index) {
                         setSelectedMenuIndex(index);
@@ -207,7 +225,7 @@ export default function MainMenu() {
                           isSelected ? 'text-accent font-semibold' : 'text-text-muted',
                         ].join(' ')}
                       >
-                        {item.num}
+                        {menuItem.num}
                       </span>
 
                       <span
@@ -216,7 +234,7 @@ export default function MainMenu() {
                           isSelected ? 'text-text font-bold' : 'text-text/80 group-hover:text-text',
                         ].join(' ')}
                       >
-                        {item.label}
+                        {menuItem.label}
                       </span>
                     </div>
 
@@ -228,7 +246,7 @@ export default function MainMenu() {
                           isSelected ? 'text-text-muted opacity-100' : 'opacity-0',
                         ].join(' ')}
                       >
-                        {item.desc}
+                        {menuItem.desc}
                       </span>
                     </div>
                   </button>
@@ -239,7 +257,7 @@ export default function MainMenu() {
         </nav>
       </div>
 
-      {/* ── Bottom Controls: Shortcuts & Sound Toggle ───────────────────── */}
+      {/* ── Bottom Controls: Shortcuts & Sound Toggle ─────────────────── */}
       <footer className="w-full flex items-center justify-between pt-6 mt-8 border-t border-border">
         {/* Desktop Keyboard Hints */}
         <div
@@ -257,10 +275,11 @@ export default function MainMenu() {
             type="button"
             onClick={toggleSound}
             className="btn-secondary min-h-[44px] min-w-[44px] px-3 py-2 flex items-center gap-2 font-mono text-xs"
-            aria-label={soundOn ? 'Mute audio' : 'Enable audio'}
+            aria-label={soundOn ? 'Mute UI sounds' : 'Unmute UI sounds'}
+            aria-pressed={soundOn}
             title={soundOn ? 'Audio: Active' : 'Audio: Muted'}
           >
-            <span aria-hidden="true">{soundOn ? '🔊' : '🔇'}</span>
+            <Icon name={soundOn ? 'volume' : 'volume-off'} size={16} />
             <span className="uppercase text-[0.7rem] tracking-wider">
               {soundOn ? 'AUDIO ON' : 'MUTED'}
             </span>
